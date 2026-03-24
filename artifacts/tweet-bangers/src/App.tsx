@@ -273,6 +273,32 @@ export default function App() {
           </div>
         )}
       </div>
+
+      {/* Footer */}
+      <div className="text-center pb-10 mt-4">
+        <p className="text-xs text-[hsl(0_0%_28%)]">
+          built by{" "}
+          <a
+            href="https://twitter.com/pelz0x"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="hover:text-white transition-colors"
+          >
+            pelz
+          </a>
+        </p>
+        <p className="text-xs text-[hsl(0_0%_28%)]">
+          inspired by{" "}
+          <a
+            href="https://twitter.com/tukifromKL"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="hover:text-white transition-colors"
+          >
+            tuki
+          </a>
+        </p>
+      </div>
     </div>
   );
 }
