@@ -1,5 +1,5 @@
-import { useState, useEffect, useRef } from "react";
-import { Settings, X, Copy, Check, Loader2 } from "lucide-react";
+import { useState, useRef } from "react";
+import { Copy, Check, Loader2 } from "lucide-react";
 
 const CATEGORIES = [
   {
@@ -35,49 +35,6 @@ function parseResponses(raw: string): string[] {
   return lines.slice(0, 3).map((l) => l.replace(/^[123][.)]\s*/, "").trim());
 }
 
-function SettingsModal({ onClose }: { onClose: () => void }) {
-  const [key, setKey] = useState(() => localStorage.getItem("anthropic_key") || "");
-  const [saved, setSaved] = useState(false);
-
-  function save() {
-    localStorage.setItem("anthropic_key", key.trim());
-    setSaved(true);
-    setTimeout(() => setSaved(false), 1500);
-  }
-
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center">
-      <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" onClick={onClose} />
-      <div className="relative z-10 bg-[hsl(0_0%_8%)] border border-[hsl(0_0%_16%)] w-full max-w-md mx-4 p-6">
-        <div className="flex items-center justify-between mb-5">
-          <span className="text-xs font-mono uppercase tracking-widest text-[hsl(0_0%_50%)]">
-            API Key
-          </span>
-          <button onClick={onClose} className="text-[hsl(0_0%_40%)] hover:text-white transition-colors">
-            <X size={16} />
-          </button>
-        </div>
-        <p className="text-xs text-[hsl(0_0%_45%)] mb-4 leading-relaxed">
-          Your Anthropic API key. Stored locally in your browser. Never sent anywhere except Anthropic.
-        </p>
-        <input
-          type="password"
-          value={key}
-          onChange={(e) => setKey(e.target.value)}
-          placeholder="sk-ant-..."
-          className="w-full bg-[hsl(0_0%_5%)] border border-[hsl(0_0%_16%)] text-white text-sm px-3 py-2.5 outline-none focus:border-[hsl(0_0%_30%)] transition-colors font-mono mb-4 placeholder:text-[hsl(0_0%_28%)]"
-        />
-        <button
-          onClick={save}
-          className="w-full bg-white text-black text-sm font-semibold py-2.5 hover:bg-[hsl(0_0%_88%)] transition-colors"
-        >
-          {saved ? "Saved" : "Save key"}
-        </button>
-      </div>
-    </div>
-  );
-}
-
 function CopyButton({ text }: { text: string }) {
   const [copied, setCopied] = useState(false);
 
@@ -90,9 +47,13 @@ function CopyButton({ text }: { text: string }) {
   return (
     <button
       onClick={copy}
-      className="flex items-center gap-1.5 text-xs text-[hsl(0_0%_40%)] hover:text-white transition-colors font-mono uppercase tracking-wider"
+      className={`flex items-center gap-2 text-xs font-semibold px-3 py-1.5 border transition-all ${
+        copied
+          ? "border-white/20 text-white bg-white/10"
+          : "border-[hsl(0_0%_18%)] text-[hsl(0_0%_55%)] hover:border-white/30 hover:text-white"
+      }`}
     >
-      {copied ? <Check size={12} /> : <Copy size={12} />}
+      {copied ? <Check size={11} /> : <Copy size={11} />}
       {copied ? "Copied" : "Copy"}
     </button>
   );
@@ -104,22 +65,9 @@ export default function App() {
   const [results, setResults] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-  const [showSettings, setShowSettings] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
-  useEffect(() => {
-    const key = localStorage.getItem("anthropic_key");
-    if (!key) {
-      setShowSettings(true);
-    }
-  }, []);
-
   async function generate() {
-    const apiKey = localStorage.getItem("anthropic_key");
-    if (!apiKey) {
-      setShowSettings(true);
-      return;
-    }
     if (!tweet.trim()) return;
 
     const cat = CATEGORIES.find((c) => c.id === category)!;
@@ -128,34 +76,26 @@ export default function App() {
     setResults([]);
 
     try {
-      const response = await fetch("https://api.anthropic.com/v1/messages", {
+      const response = await fetch("https://text.pollinations.ai/", {
         method: "POST",
         headers: {
-          "x-api-key": apiKey,
-          "anthropic-version": "2023-06-01",
           "content-type": "application/json",
-          "anthropic-dangerous-direct-browser-access": "true",
         },
         body: JSON.stringify({
-          model: "claude-opus-4-5",
-          max_tokens: 1024,
-          system: cat.systemPrompt,
+          model: "openai",
+          private: true,
           messages: [
-            {
-              role: "user",
-              content: `Tweet to quote:\n\n${tweet.trim()}`,
-            },
+            { role: "system", content: cat.systemPrompt },
+            { role: "user", content: `Tweet to quote:\n\n${tweet.trim()}` },
           ],
         }),
       });
 
       if (!response.ok) {
-        const errData = await response.json().catch(() => ({}));
-        throw new Error(errData?.error?.message || `HTTP ${response.status}`);
+        throw new Error(`Error ${response.status} — try again`);
       }
 
-      const data = await response.json();
-      const raw = data.content?.[0]?.text || "";
+      const raw = await response.text();
       const parsed = parseResponses(raw);
       setResults(parsed.length ? parsed : [raw]);
     } catch (err: unknown) {
@@ -176,21 +116,12 @@ export default function App() {
 
   return (
     <div className="min-h-screen bg-[hsl(0_0%_5%)] text-white">
-      {showSettings && <SettingsModal onClose={() => setShowSettings(false)} />}
-
       <div className="max-w-2xl mx-auto px-5 py-10">
         {/* Header */}
-        <div className="flex items-start justify-between mb-8">
+        <div className="mb-8">
           <h1 className="text-3xl font-black tracking-tight leading-none">
             Tweet Bangers
           </h1>
-          <button
-            onClick={() => setShowSettings(true)}
-            className="text-[hsl(0_0%_35%)] hover:text-white transition-colors mt-1"
-            title="API key settings"
-          >
-            <Settings size={18} />
-          </button>
         </div>
 
         {/* Category buttons */}
@@ -257,7 +188,7 @@ export default function App() {
                 key={i}
                 className="border border-[hsl(0_0%_14%)] bg-[hsl(0_0%_8%)] px-5 py-4"
               >
-                <div className="flex items-start justify-between gap-4">
+                <div className="flex items-start gap-4 mb-4">
                   <span className="text-[hsl(0_0%_28%)] font-black text-lg leading-none shrink-0 mt-0.5 select-none">
                     {i + 1}
                   </span>
@@ -265,7 +196,7 @@ export default function App() {
                     {text}
                   </p>
                 </div>
-                <div className="flex justify-end mt-3">
+                <div className="flex justify-end">
                   <CopyButton text={text} />
                 </div>
               </div>
