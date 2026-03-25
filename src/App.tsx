@@ -7,6 +7,7 @@ type CategoryConfig = {
   label: string;
   shortLabel: string;
   description: string;
+  summary: string;
   rawUrl: string;
   accentClass: string;
   textAccentClass: string;
@@ -21,7 +22,8 @@ const CATEGORIES: CategoryConfig[] = [
     label: "AI & Jobs",
     shortLabel: "automation",
     description:
-      "Automation, replacement arcs, and the moment the tool starts doing the founder's job too.",
+      "Use this when the tweet is about AI replacing jobs, companies cutting workers while building AI, or founders automating the same roles they just eliminated.",
+    summary: "Layoffs, automation, and founders replacing the same jobs they cut.",
     rawUrl:
       "https://raw.githubusercontent.com/Pelz01/Tweet-Bangers/master/examples/ai-jobs.md",
     accentClass: "bg-[#EDF3EC]",
@@ -32,7 +34,8 @@ const CATEGORIES: CategoryConfig[] = [
     label: "Market Games",
     shortLabel: "timing",
     description:
-      "Insider timing, geopolitical choreography, and headlines that seem to arrive right on schedule.",
+      "Use this when the tweet is about suspiciously timed trades, insider moves, geopolitical decisions that happen to benefit someone's portfolio, or money flowing before the news breaks.",
+    summary: "Suspicious trades, geopolitical timing, and money moving before headlines.",
     rawUrl:
       "https://raw.githubusercontent.com/Pelz01/Tweet-Bangers/master/examples/market-games.md",
     accentClass: "bg-[#E1F3FE]",
@@ -40,10 +43,11 @@ const CATEGORIES: CategoryConfig[] = [
   },
   {
     id: "ceo-clowns",
-    label: "CEO Clowns",
-    shortLabel: "hypocrisy",
+    label: "CEO/Big Shark",
+    shortLabel: "public lie",
     description:
-      "Executive hypocrisy, corporate reversals, and elite contradictions dressed up as leadership.",
+      "Use this when the tweet is about a CEO, institution, or powerful company saying one thing publicly and doing the exact opposite — BlackRock on Bitcoin, OpenAI on its mission, Tim Cook on screen time. The public statement is always the lie.",
+    summary: "Powerful people saying one thing in public and doing the opposite.",
     rawUrl:
       "https://raw.githubusercontent.com/Pelz01/Tweet-Bangers/master/examples/ceo-clowns.md",
     accentClass: "bg-[#FDEBEC]",
@@ -315,7 +319,7 @@ export default function App() {
                     <Reveal key={category.id} index={index + 2}>
                       <button
                         onClick={() => void handleCategorySelect(category.id)}
-                        className={`h-full min-h-[210px] rounded-xl border p-4 text-left transition sm:min-h-[230px] sm:p-5 ${
+                        className={`h-full min-h-[160px] rounded-xl border p-4 text-left transition sm:min-h-[180px] sm:p-5 ${
                           isActive
                             ? "border-[#111111] bg-[#111111] text-white"
                             : "border-[#EAEAEA] bg-white hover:border-[#CFCFCB] hover:shadow-[0_2px_8px_rgba(0,0,0,0.04)]"
@@ -327,16 +331,20 @@ export default function App() {
                               {category.label}
                             </h3>
                           </div>
-                          <span className="mt-1 text-xs uppercase tracking-[0.18em] text-[#787774]">
-                            {isFetching ? "..." : hasLoadedExamples ? "ok" : "go"}
+                          <span
+                            className={`mt-1 text-[10px] uppercase tracking-[0.18em] ${
+                              isActive ? "text-white/55" : "text-[#A3A3A0]"
+                            }`}
+                          >
+                            {isFetching ? "load" : hasLoadedExamples ? "ready" : "fetch"}
                           </span>
                         </div>
                         <p
-                          className={`text-sm leading-7 sm:leading-8 ${
+                          className={`max-w-[18ch] text-sm leading-7 ${
                             isActive ? "text-white/72" : "text-[#787774]"
                           }`}
                         >
-                          {category.description}
+                          {category.summary}
                         </p>
                       </button>
                     </Reveal>
@@ -345,6 +353,16 @@ export default function App() {
               </div>
 
               <div className="mt-8 border-t border-[#EAEAEA] pt-6 sm:mt-10 sm:pt-8">
+                {activeCategory ? (
+                  <div className="mb-5 rounded-xl border border-[#EAEAEA] bg-white px-4 py-4">
+                    <p className="text-[10px] uppercase tracking-[0.12em] text-[#787774]">
+                      Active category
+                    </p>
+                    <p className="mt-2 max-w-2xl text-sm leading-7 text-[#787774]">
+                      {activeCategory.description}
+                    </p>
+                  </div>
+                ) : null}
                 <label className="mb-3 block text-sm text-[#2F3437]">
                   Tweet to quote
                 </label>
