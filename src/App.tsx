@@ -285,6 +285,18 @@ export default function App() {
                   </a>{" "}
                   and add to it.
                 </p>
+                <p className="mt-2 text-[13px] leading-6 text-[#787774] sm:text-sm sm:leading-7">
+                  Use this{" "}
+                  <a
+                    href="https://x.com/i/lists/2036587608122277932"
+                    target="_blank"
+                    rel="noreferrer"
+                    className="font-medium text-[#111111] underline decoration-[#EAEAEA] underline-offset-4 transition hover:text-[#9F2F2D]"
+                  >
+                    curated accounts list
+                  </a>{" "}
+                  to find more bangers.
+                </p>
               </div>
             </div>
           </header>
