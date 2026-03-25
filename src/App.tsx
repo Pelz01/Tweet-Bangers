@@ -141,7 +141,7 @@ function LoadingDrafts() {
 export default function App() {
   const [tweet, setTweet] = useState("");
   const [results, setResults] = useState<string[]>([]);
-  const [expandedResult, setExpandedResult] = useState<string | null>(null);
+  const [expandedDraftIndex, setExpandedDraftIndex] = useState<number | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [examplesByCategory, setExamplesByCategory] = useState<
@@ -183,7 +183,7 @@ export default function App() {
     setLoading(true);
     setError("");
     setResults([]);
-    setExpandedResult(null);
+    setExpandedDraftIndex(null);
 
     try {
       const exampleSets = await Promise.all(
@@ -364,24 +364,34 @@ export default function App() {
                   {results.map((text, index) => (
                     <Reveal key={`${index}-${text}`} index={index + 3}>
                       <article className="rounded-xl border border-[#EAEAEA] bg-[#FBFBFA] p-3.5 sm:p-4">
-                        <div className="mb-4 flex items-start gap-3">
+                        <div className="flex items-start gap-3">
                           <span className="rounded-md bg-white px-2 py-1 font-mono text-[10px] uppercase tracking-[0.12em] text-[#787774] border border-[#EAEAEA]">
                             0{index + 1}
                           </span>
-                          <button
-                            type="button"
-                            onClick={() => setExpandedResult(text)}
-                            className="flex-1 text-left"
-                          >
-                            <p className="whitespace-pre-wrap break-words text-[13px] leading-5 text-[#2F3437] sm:text-[15px] sm:leading-7">
-                              {text}
-                            </p>
-                            <span className="mt-2 inline-flex text-[11px] uppercase tracking-[0.12em] text-[#787774]">
-                              View full text
-                            </span>
-                          </button>
+                          <div className="min-w-0 flex-1">
+                            <button
+                              type="button"
+                              onClick={() =>
+                                setExpandedDraftIndex((current) =>
+                                  current === index ? null : index,
+                                )
+                              }
+                              className="w-full text-left"
+                            >
+                              <p
+                                className={`break-words text-[13px] leading-5 text-[#2F3437] sm:text-[15px] sm:leading-7 ${
+                                  expandedDraftIndex === index ? "whitespace-pre-wrap" : "line-clamp-3"
+                                }`}
+                              >
+                                {text}
+                              </p>
+                              <span className="mt-2 inline-flex text-[11px] uppercase tracking-[0.12em] text-[#787774]">
+                                {expandedDraftIndex === index ? "Hide draft" : "Open draft"}
+                              </span>
+                            </button>
+                          </div>
                         </div>
-                        <div className="flex justify-end">
+                        <div className="mt-4 flex justify-end">
                           <CopyButton text={text} />
                         </div>
                       </article>
@@ -417,39 +427,6 @@ export default function App() {
         </footer>
       </main>
 
-      {expandedResult ? (
-        <div className="fixed inset-0 z-50 flex items-end bg-[rgba(17,17,17,0.42)] p-3 sm:items-center sm:justify-center sm:p-6">
-          <div className="max-h-[88vh] w-full max-w-2xl overflow-hidden rounded-xl border border-[#EAEAEA] bg-white">
-            <div className="flex items-center justify-between border-b border-[#EAEAEA] px-4 py-3 sm:px-5">
-              <div>
-                <p className="text-[10px] uppercase tracking-[0.14em] text-[#787774]">
-                  Full draft
-                </p>
-                <p className="mt-1 text-sm font-medium text-[#111111]">
-                  Review before copy
-                </p>
-              </div>
-              <button
-                type="button"
-                onClick={() => setExpandedResult(null)}
-                className="rounded-md border border-[#EAEAEA] bg-[#F7F6F3] px-3 py-2 text-[11px] uppercase tracking-[0.12em] text-[#2F3437] transition hover:bg-white active:scale-[0.98]"
-              >
-                Close
-              </button>
-            </div>
-
-            <div className="max-h-[calc(88vh-76px)] overflow-y-auto px-4 py-4 sm:px-5">
-              <p className="whitespace-pre-wrap text-[14px] leading-7 text-[#2F3437] sm:text-[15px]">
-                {expandedResult}
-              </p>
-
-              <div className="mt-5 flex justify-end">
-                <CopyButton text={expandedResult} />
-              </div>
-            </div>
-          </div>
-        </div>
-      ) : null}
     </div>
   );
 }
