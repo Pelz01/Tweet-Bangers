@@ -3,12 +3,29 @@
 @plugin "@tailwindcss/typography";
 
 @theme inline {
-  --font-sans: "Inter", system-ui, sans-serif;
-  --font-serif: Georgia, serif;
+  --font-sans: "Geist Sans", "Helvetica Neue", "SF Pro Display", sans-serif;
+  --font-serif: "Newsreader", "Instrument Serif", "Iowan Old Style", serif;
+  --font-mono: "Geist Mono", "SF Mono", "JetBrains Mono", monospace;
 }
 
 @layer base {
+  * {
+    box-sizing: border-box;
+  }
+
+  html {
+    background: #f7f6f3;
+  }
+
   body {
-    @apply font-sans antialiased;
+    @apply m-0 font-sans antialiased;
+    color: #111111;
+    background: #f7f6f3;
+  }
+
+  button,
+  input,
+  textarea {
+    font: inherit;
   }
 }
