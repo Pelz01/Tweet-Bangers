@@ -28,23 +28,9 @@ const CATEGORIES: CategoryConfig[] = [
   },
 ];
 
-function parseResponses(raw: string): string[] {
+function parseSingleResponse(raw: string): string {
   const normalized = raw.replace(/\r\n/g, "\n").trim();
-  const matches = [...normalized.matchAll(/(?:^|\n)([123])[.)-]?\s*([\s\S]*?)(?=\n[123][.)-]?\s|\s*$)/g)];
-
-  if (matches.length >= 3) {
-    return matches
-      .sort((a, b) => Number(a[1]) - Number(b[1]))
-      .slice(0, 3)
-      .map((match) => match[2].trim())
-      .filter(Boolean);
-  }
-
-  return normalized
-    .split(/\n{2,}/)
-    .map((block) => block.replace(/^[123][.)-]?\s*/, "").trim())
-    .filter(Boolean)
-    .slice(0, 3);
+  return normalized.replace(/^[123][.)-]?\s*/, "").trim();
 }
 
 function buildUserPrompt(personName: string, examples: string, tweet: string) {
@@ -233,8 +219,7 @@ export default function App() {
             throw new Error("The model returned an empty response.");
           }
 
-          const parsed = parseResponses(raw);
-          return parsed[0] ?? raw;
+          return parseSingleResponse(raw);
         }),
       );
 
