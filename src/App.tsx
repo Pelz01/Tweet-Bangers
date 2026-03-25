@@ -128,6 +128,30 @@ function CopyButton({ text }: { text: string }) {
   );
 }
 
+function LoadingDrafts() {
+  return (
+    <div className="space-y-3">
+      {[0, 1, 2].map((index) => (
+        <div
+          key={index}
+          className="rounded-xl border border-[#EAEAEA] bg-[#FBFBFA] p-3.5 sm:p-4"
+        >
+          <div className="mb-4 flex items-start gap-3">
+            <span className="rounded-md border border-[#EAEAEA] bg-white px-2 py-1 font-mono text-[10px] uppercase tracking-[0.12em] text-[#787774]">
+              0{index + 1}
+            </span>
+            <div className="flex-1 space-y-2.5 pt-0.5">
+              <div className="h-3 animate-pulse rounded bg-[#F0EFEC]" />
+              <div className="h-3 w-[88%] animate-pulse rounded bg-[#F0EFEC]" />
+              <div className="h-3 w-[72%] animate-pulse rounded bg-[#F0EFEC]" />
+            </div>
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
 export default function App() {
   const [tweet, setTweet] = useState("");
   const [results, setResults] = useState<string[]>([]);
@@ -254,9 +278,6 @@ export default function App() {
               <span className="rounded-full bg-[#FBF3DB] px-2.5 py-1 text-[10px] uppercase tracking-[0.14em] text-[#956400]">
                 quote tweet tool
               </span>
-              <span className="rounded-full border border-[#EAEAEA] bg-white px-2.5 py-1 text-[10px] uppercase tracking-[0.14em] text-[#787774]">
-                {PERSON_NAME}
-              </span>
             </div>
 
             <div className="mt-4 flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
@@ -265,7 +286,7 @@ export default function App() {
                   Tweet Bangers
                 </h1>
                 <p className="mt-2 text-[13px] leading-6 text-[#787774] sm:text-sm sm:leading-7">
-                  Paste the tweet. Get three different angles back.
+                  Paste a tweet and 3 variations of tweets you quote it with.
                 </p>
               </div>
             </div>
@@ -284,12 +305,6 @@ export default function App() {
                     Drop the tweet
                   </h2>
                 </div>
-              </div>
-
-              <div className="mb-3 rounded-xl border border-[#EAEAEA] bg-white px-3.5 py-3 sm:px-4">
-                <p className="text-[12px] leading-5 text-[#787774] sm:text-[13px] sm:leading-6">
-                  Three parallel passes. Three different angles.
-                </p>
               </div>
 
               <div className="rounded-xl border border-[#EAEAEA] bg-white p-3.5 sm:p-4">
@@ -315,7 +330,7 @@ export default function App() {
                     disabled={loading}
                     className="rounded-md bg-[#111111] px-5 py-3 text-sm text-white transition hover:bg-[#2F3437] active:scale-[0.98] disabled:opacity-50"
                   >
-                    {loading ? "Running three passes" : "Banger it"}
+                    {loading ? "Generating Bangers" : "Banger it"}
                   </button>
 
                   <kbd className="w-fit rounded border border-[#EAEAEA] bg-[#F7F6F3] px-2.5 py-1.5 font-mono text-[11px] text-[#787774]">
@@ -348,7 +363,14 @@ export default function App() {
                 </span>
               </div>
 
-              {results.length === 0 ? (
+              {loading ? (
+                <div>
+                  <div className="mb-3 rounded-xl border border-[#EAEAEA] bg-[#FBFBFA] px-4 py-3 text-[12px] leading-5 text-[#787774] sm:text-[13px] sm:leading-6">
+                    Generating Bangers
+                  </div>
+                  <LoadingDrafts />
+                </div>
+              ) : results.length === 0 ? (
                 <div className="rounded-xl border border-dashed border-[#EAEAEA] bg-[#FBFBFA] p-4 text-[12px] leading-5 text-[#787774] sm:text-[13px] sm:leading-6">
                   Run the generator and three drafts will land here.
                 </div>
@@ -366,7 +388,7 @@ export default function App() {
                             onClick={() => setExpandedResult(text)}
                             className="flex-1 text-left"
                           >
-                            <p className="line-clamp-6 text-[13px] leading-5 text-[#2F3437] sm:text-[15px] sm:leading-7">
+                            <p className="whitespace-pre-wrap break-words text-[13px] leading-5 text-[#2F3437] sm:text-[15px] sm:leading-7">
                               {text}
                             </p>
                             <span className="mt-2 inline-flex text-[11px] uppercase tracking-[0.12em] text-[#787774]">
@@ -385,6 +407,29 @@ export default function App() {
             </section>
           </Reveal>
         </div>
+
+        <footer className="mt-5 px-1 pb-2 text-[12px] leading-6 text-[#787774] sm:mt-6 sm:text-[13px]">
+          Built by{" "}
+          <a
+            href="https://x.com/pelz0x"
+            target="_blank"
+            rel="noreferrer"
+            className="font-medium text-[#111111] underline decoration-[#EAEAEA] underline-offset-4 transition hover:text-[#1F6C9F]"
+          >
+            Pelz
+          </a>
+          {" "} 
+          <span className="text-[#B7B5B0]">•</span>
+          {" "}Inspired by{" "}
+          <a
+            href="https://x.com/TukiFromTL"
+            target="_blank"
+            rel="noreferrer"
+            className="font-medium text-[#111111] underline decoration-[#EAEAEA] underline-offset-4 transition hover:text-[#9F2F2D]"
+          >
+            Tuki
+          </a>
+        </footer>
       </main>
 
       {expandedResult ? (
