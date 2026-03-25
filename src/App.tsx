@@ -415,7 +415,11 @@ export default function App() {
           </Reveal>
         </div>
 
-        <footer className="mt-5 px-1 pb-2 text-[12px] leading-6 text-[#787774] sm:mt-6 sm:text-[13px]">
+        <div className="mt-5 px-1 text-center text-[12px] leading-6 text-[#787774] sm:mt-6 sm:text-[13px]">
+          LLM can make mistakes, make sure to check and refine before posting
+        </div>
+
+        <footer className="mt-3 px-1 pb-2 text-center text-[12px] leading-6 text-[#787774] sm:text-[13px]">
           Built by{" "}
           <a
             href="https://x.com/pelz0x"
