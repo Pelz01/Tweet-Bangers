@@ -273,6 +273,18 @@ export default function App() {
                 <p className="mt-2 text-[13px] leading-6 text-[#787774] sm:text-sm sm:leading-7">
                   Paste a tweet and 3 variations of tweets you quote it with.
                 </p>
+                <p className="mt-2 text-[13px] leading-6 text-[#787774] sm:text-sm sm:leading-7">
+                  Pick one of these{" "}
+                  <a
+                    href="https://x.com/ayman_web3/status/2031387636800303154"
+                    target="_blank"
+                    rel="noreferrer"
+                    className="font-medium text-[#111111] underline decoration-[#EAEAEA] underline-offset-4 transition hover:text-[#1F6C9F]"
+                  >
+                    viral clips
+                  </a>{" "}
+                  and add to it.
+                </p>
               </div>
             </div>
           </header>
