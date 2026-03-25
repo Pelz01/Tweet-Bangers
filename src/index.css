@@ -1,0 +1,14 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+@plugin "@tailwindcss/typography";
+
+@theme inline {
+  --font-sans: "Inter", system-ui, sans-serif;
+  --font-serif: Georgia, serif;
+}
+
+@layer base {
+  body {
+    @apply font-sans antialiased;
+  }
+}
