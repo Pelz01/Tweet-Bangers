@@ -1,16 +1,10 @@
-import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 
 type CategoryId = "ai-jobs" | "market-games" | "ceo-clowns";
 
 type CategoryConfig = {
   id: CategoryId;
-  label: string;
-  shortLabel: string;
-  description: string;
-  summary: string;
   rawUrl: string;
-  accentClass: string;
-  textAccentClass: string;
 };
 
 const API_ENDPOINT = "/api/generate";
@@ -19,39 +13,18 @@ const PERSON_NAME = "Tuki";
 const CATEGORIES: CategoryConfig[] = [
   {
     id: "ai-jobs",
-    label: "AI & Jobs",
-    shortLabel: "automation",
-    description:
-      "Use this when the tweet is about AI replacing jobs, companies cutting workers while building AI, or founders automating the same roles they just eliminated.",
-    summary: "Layoffs, replacement arcs, and founders deleting the same roles they cut.",
     rawUrl:
       "https://raw.githubusercontent.com/Pelz01/Tweet-Bangers/master/examples/ai-jobs.md",
-    accentClass: "bg-[#EDF3EC]",
-    textAccentClass: "text-[#346538]",
   },
   {
     id: "market-games",
-    label: "Market Games",
-    shortLabel: "timing",
-    description:
-      "Use this when the tweet is about suspiciously timed trades, insider moves, geopolitical decisions that happen to benefit someone's portfolio, or money flowing before the news breaks.",
-    summary: "Suspicious trades, convenient timing, and money moving before headlines.",
     rawUrl:
       "https://raw.githubusercontent.com/Pelz01/Tweet-Bangers/master/examples/market-games.md",
-    accentClass: "bg-[#E1F3FE]",
-    textAccentClass: "text-[#1F6C9F]",
   },
   {
     id: "ceo-clowns",
-    label: "CEO/Big Shark",
-    shortLabel: "public lie",
-    description:
-      "Use this when the tweet is about a CEO, institution, or powerful company saying one thing publicly and doing the exact opposite — BlackRock on Bitcoin, OpenAI on its mission, Tim Cook on screen time. The public statement is always the lie.",
-    summary: "The public line is clean. The actual behavior says the opposite.",
     rawUrl:
       "https://raw.githubusercontent.com/Pelz01/Tweet-Bangers/master/examples/ceo-clowns.md",
-    accentClass: "bg-[#FDEBEC]",
-    textAccentClass: "text-[#9F2F2D]",
   },
 ];
 
@@ -80,12 +53,12 @@ function buildUserPrompt(personName: string, examples: string, tweet: string) {
 Here are examples of how they quote tweets in this category:
 ${examples}
 
-Generate 3 quote tweet variations for this tweet:
+Generate exactly 1 quote tweet variation for this tweet:
 ${tweet}
 
 Rules:
 - Match their tone, length, and structure exactly
-- Return only the 3 variations, numbered 1-3
+- Return only the quote tweet
 - No explanation, no hashtags, no extra commentary`;
 }
 
@@ -156,22 +129,14 @@ function CopyButton({ text }: { text: string }) {
 }
 
 export default function App() {
-  const [selectedCategory, setSelectedCategory] = useState<CategoryId | null>("ai-jobs");
   const [tweet, setTweet] = useState("");
   const [results, setResults] = useState<string[]>([]);
   const [expandedResult, setExpandedResult] = useState<string | null>(null);
-  const [isCategoryPanelOpen, setIsCategoryPanelOpen] = useState(true);
   const [loading, setLoading] = useState(false);
-  const [loadingCategory, setLoadingCategory] = useState<CategoryId | null>(null);
   const [error, setError] = useState("");
   const [examplesByCategory, setExamplesByCategory] = useState<
     Partial<Record<CategoryId, string>>
   >({});
-
-  const activeCategory = useMemo(
-    () => CATEGORIES.find((item) => item.id === selectedCategory) ?? null,
-    [selectedCategory],
-  );
 
   async function loadCategoryExamples(categoryId: CategoryId, force = false) {
     const category = CATEGORIES.find((item) => item.id === categoryId);
@@ -180,8 +145,6 @@ export default function App() {
     if (!force && examplesByCategory[categoryId]) {
       return examplesByCategory[categoryId]!;
     }
-
-    setLoadingCategory(categoryId);
 
     try {
       const response = await fetch(category.rawUrl, { cache: "no-store" });
@@ -196,28 +159,12 @@ export default function App() {
 
       setExamplesByCategory((current) => ({ ...current, [categoryId]: markdown }));
       return markdown;
-    } finally {
-      setLoadingCategory(null);
-    }
-  }
-
-  async function handleCategorySelect(categoryId: CategoryId) {
-    setSelectedCategory(categoryId);
-    setError("");
-
-    try {
-      await loadCategoryExamples(categoryId);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to load examples.");
+      throw err instanceof Error ? err : new Error("Failed to load examples.");
     }
   }
 
   async function generate() {
-    if (!selectedCategory) {
-      setError("Choose a category first.");
-      return;
-    }
-
     if (!tweet.trim()) {
       setError("Paste a tweet to quote first.");
       return;
@@ -229,33 +176,61 @@ export default function App() {
     setExpandedResult(null);
 
     try {
-      const examples =
-        examplesByCategory[selectedCategory] ??
-        (await loadCategoryExamples(selectedCategory));
+      const exampleSets = await Promise.all(
+        CATEGORIES.map(async (category) => ({
+          categoryId: category.id,
+          examples:
+            examplesByCategory[category.id] ?? (await loadCategoryExamples(category.id)),
+        })),
+      );
 
-      const response = await fetch(API_ENDPOINT, {
-        method: "POST",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify({
-          prompt: buildUserPrompt(PERSON_NAME, examples, tweet.trim()),
+      const generationResults = await Promise.allSettled(
+        exampleSets.map(async ({ examples }) => {
+          const response = await fetch(API_ENDPOINT, {
+            method: "POST",
+            headers: { "content-type": "application/json" },
+            body: JSON.stringify({
+              prompt: buildUserPrompt(PERSON_NAME, examples, tweet.trim()),
+            }),
+          });
+
+          if (!response.ok) {
+            const payload = (await response.json().catch(() => null)) as
+              | { error?: string }
+              | null;
+            throw new Error(
+              payload?.error ?? `Generation failed with status ${response.status}.`,
+            );
+          }
+
+          const payload = (await response.json()) as { text?: string };
+          const raw = payload.text?.trim();
+          if (!raw) {
+            throw new Error("The model returned an empty response.");
+          }
+
+          const parsed = parseResponses(raw);
+          return parsed[0] ?? raw;
         }),
-      });
+      );
 
-      if (!response.ok) {
-        const payload = (await response.json().catch(() => null)) as
-          | { error?: string }
-          | null;
-        throw new Error(payload?.error ?? `Generation failed with status ${response.status}.`);
+      const successfulResults = generationResults
+        .filter(
+          (result): result is PromiseFulfilledResult<string> =>
+            result.status === "fulfilled" && Boolean(result.value?.trim()),
+        )
+        .map((result) => result.value.trim());
+
+      if (successfulResults.length === 0) {
+        throw new Error("No drafts came back.");
       }
 
-      const payload = (await response.json()) as { text?: string };
-      const raw = payload.text?.trim();
-      if (!raw) {
-        throw new Error("The model returned an empty response.");
-      }
+      setResults(successfulResults);
 
-      const parsed = parseResponses(raw);
-      setResults(parsed.length ? parsed : [raw]);
+      const failedCount = generationResults.length - successfulResults.length;
+      if (failedCount > 0) {
+        setError(`${failedCount} pass${failedCount > 1 ? "es" : ""} missed. Showing what came back.`);
+      }
     } catch (err) {
       setError(
         err instanceof Error ? err.message : "Something went wrong while generating.",
@@ -290,127 +265,34 @@ export default function App() {
                   Tweet Bangers
                 </h1>
                 <p className="mt-2 text-[13px] leading-6 text-[#787774] sm:text-sm sm:leading-7">
-                  Pick a lane. Paste the tweet. Get three clean drafts back.
+                  Paste the tweet. Get three different angles back.
                 </p>
               </div>
-
-              {activeCategory ? (
-                <div className={`rounded-xl border border-[#EAEAEA] px-4 py-3 ${activeCategory.accentClass}`}>
-                  <p className={`text-[10px] uppercase tracking-[0.14em] ${activeCategory.textAccentClass}`}>
-                    active
-                  </p>
-                  <p className="mt-1 text-sm font-medium text-[#111111]">
-                    {activeCategory.label}
-                  </p>
-                </div>
-              ) : null}
             </div>
           </header>
         </Reveal>
 
-        <div className="grid gap-4 lg:grid-cols-[1.18fr_0.94fr] lg:gap-5">
+        <div className="grid gap-4 lg:grid-cols-[1.02fr_1fr] lg:gap-5">
           <Reveal index={1}>
             <section className="rounded-xl border border-[#EAEAEA] bg-[#F9F9F8] p-3 sm:p-4 lg:p-5">
               <div className="mb-3 flex items-center justify-between">
                 <div>
                   <p className="text-[10px] uppercase tracking-[0.14em] text-[#787774]">
-                    Categories
+                    Input
                   </p>
                   <h2 className="mt-1 text-lg font-medium tracking-[-0.03em] text-[#111111] sm:text-xl">
-                    Choose a lane
+                    Drop the tweet
                   </h2>
                 </div>
-
-                {activeCategory ? (
-                  <span className={`hidden rounded-full px-3 py-1 text-[10px] uppercase tracking-[0.12em] sm:inline-flex ${activeCategory.accentClass} ${activeCategory.textAccentClass}`}>
-                    {activeCategory.shortLabel}
-                  </span>
-                ) : null}
               </div>
 
-              <div className="mb-3 flex items-center justify-between rounded-xl border border-[#EAEAEA] bg-white px-3.5 py-3 sm:px-4">
-                <div>
-                  <p className="text-[10px] uppercase tracking-[0.14em] text-[#787774]">
-                    Lane brief
-                  </p>
-                  <p className="mt-1 text-[12px] leading-5 text-[#787774] sm:text-[13px] sm:leading-6">
-                    Keep the category side compact until you need the full brief.
-                  </p>
-                </div>
-
-                <button
-                  type="button"
-                  onClick={() => setIsCategoryPanelOpen((current) => !current)}
-                  className="rounded-md border border-[#EAEAEA] bg-[#F7F6F3] px-3 py-2 text-[11px] uppercase tracking-[0.12em] text-[#2F3437] transition hover:bg-white active:scale-[0.98]"
-                >
-                  {isCategoryPanelOpen ? "Fold" : "Open"}
-                </button>
-              </div>
-
-              <div className={`grid gap-2 transition-all duration-300 lg:grid-cols-[0.95fr_1.15fr] lg:grid-rows-2 lg:gap-3 ${isCategoryPanelOpen ? "" : "hidden"}`}>
-                {CATEGORIES.map((category, index) => {
-                  const isActive = selectedCategory === category.id;
-                  const isFetching = loadingCategory === category.id;
-                  const hasLoadedExamples = Boolean(examplesByCategory[category.id]);
-                  const desktopClass =
-                    category.id === "ai-jobs"
-                      ? "lg:row-span-2"
-                      : category.id === "market-games"
-                        ? "lg:col-start-2 lg:row-start-1"
-                        : "lg:col-start-2 lg:row-start-2";
-
-                  return (
-                    <Reveal key={category.id} index={index + 2} className={desktopClass}>
-                      <button
-                        onClick={() => void handleCategorySelect(category.id)}
-                        className={`h-full min-h-[112px] w-full rounded-xl border p-3 text-left transition sm:min-h-[128px] sm:p-3.5 ${
-                          isActive
-                            ? "border-[#111111] bg-[#111111] text-white"
-                            : "border-[#EAEAEA] bg-white hover:border-[#CFCFCB] hover:shadow-[0_2px_8px_rgba(0,0,0,0.04)]"
-                        }`}
-                      >
-                        <div className="flex items-start justify-between gap-3">
-                          <div>
-                            <h3 className="text-[14px] font-semibold leading-5 sm:text-[15px]">
-                              {category.label}
-                            </h3>
-                            <p
-                              className={`mt-2 max-w-[28ch] text-[12px] leading-5 sm:mt-3 sm:text-[13px] sm:leading-6 ${
-                                isActive ? "text-white/74" : "text-[#787774]"
-                              }`}
-                            >
-                              {category.summary}
-                            </p>
-                          </div>
-
-                          <span
-                            className={`rounded-full px-2 py-1 text-[9px] uppercase tracking-[0.14em] ${
-                              isActive
-                                ? "bg-white/10 text-white/72"
-                                : hasLoadedExamples
-                                  ? `${category.accentClass} ${category.textAccentClass}`
-                                  : "border border-[#EAEAEA] text-[#A3A3A0]"
-                            }`}
-                          >
-                            {isFetching ? "load" : hasLoadedExamples ? "ready" : "fetch"}
-                          </span>
-                        </div>
-                      </button>
-                    </Reveal>
-                  );
-                })}
-              </div>
-
-              <div className={`mt-3 rounded-xl border border-[#EAEAEA] bg-white p-3.5 sm:p-4 ${isCategoryPanelOpen ? "" : "hidden"}`}>
-                <p className="text-[10px] uppercase tracking-[0.14em] text-[#787774]">
-                  Current brief
-                </p>
-                <p className="mt-2 text-[12px] leading-5 text-[#787774] sm:text-sm sm:leading-7">
-                  {activeCategory?.description}
+              <div className="mb-3 rounded-xl border border-[#EAEAEA] bg-white px-3.5 py-3 sm:px-4">
+                <p className="text-[12px] leading-5 text-[#787774] sm:text-[13px] sm:leading-6">
+                  Three parallel passes. Three different angles.
                 </p>
               </div>
 
-              <div className="mt-3 rounded-xl border border-[#EAEAEA] bg-white p-3.5 sm:p-4">
+              <div className="rounded-xl border border-[#EAEAEA] bg-white p-3.5 sm:p-4">
                 <label className="mb-2 block text-[12px] uppercase tracking-[0.12em] text-[#787774]">
                   Tweet to quote
                 </label>
@@ -433,7 +315,7 @@ export default function App() {
                     disabled={loading}
                     className="rounded-md bg-[#111111] px-5 py-3 text-sm text-white transition hover:bg-[#2F3437] active:scale-[0.98] disabled:opacity-50"
                   >
-                    {loading ? "Generating" : "Banger it"}
+                    {loading ? "Running three passes" : "Banger it"}
                   </button>
 
                   <kbd className="w-fit rounded border border-[#EAEAEA] bg-[#F7F6F3] px-2.5 py-1.5 font-mono text-[11px] text-[#787774]">
@@ -468,7 +350,7 @@ export default function App() {
 
               {results.length === 0 ? (
                 <div className="rounded-xl border border-dashed border-[#EAEAEA] bg-[#FBFBFA] p-4 text-[12px] leading-5 text-[#787774] sm:text-[13px] sm:leading-6">
-                  Choose a category and run the generator.
+                  Run the generator and three drafts will land here.
                 </div>
               ) : (
                 <div className="space-y-3">
