@@ -1,4 +1,4 @@
-const POLLINATIONS_URL = "https://text.pollinations.ai/";
+const POLLINATIONS_URL = "https://gen.pollinations.ai/v1/chat/completions";
 const SYSTEM_PROMPT = `You are ghostwriting quote tweets for a specific writer. Your job is not to
 write something similar — it is to write something indistinguishable from
 their actual posts. If you put your output next to their real tweets, nobody
@@ -154,8 +154,7 @@ export default async function handler(req, res) {
         Authorization: `Bearer ${apiKey}`,
       },
       body: JSON.stringify({
-        model: "claude",
-        private: true,
+        model: "openai",
         messages: [
           { role: "system", content: SYSTEM_PROMPT },
           { role: "user", content: prompt },
@@ -163,11 +162,22 @@ export default async function handler(req, res) {
       }),
     });
 
-    const text = await upstream.text();
+    const payload = await upstream.json().catch(() => null);
 
     if (!upstream.ok) {
       return res.status(upstream.status).json({
-        error: text || `Pollinations request failed with status ${upstream.status}.`,
+        error:
+          payload?.error?.message ||
+          payload?.error ||
+          `Pollinations request failed with status ${upstream.status}.`,
+      });
+    }
+
+    const text = payload?.choices?.[0]?.message?.content?.trim();
+
+    if (!text) {
+      return res.status(500).json({
+        error: "Pollinations returned an empty completion.",
       });
     }
 
