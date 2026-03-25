@@ -265,38 +265,38 @@ export default function App() {
         <div className="absolute bottom-[10%] right-[-8%] h-96 w-96 rounded-full bg-[radial-gradient(circle,_rgba(225,243,254,0.55)_0%,_rgba(225,243,254,0)_72%)]" />
       </div>
 
-      <main className="relative mx-auto max-w-5xl px-4 py-12 sm:px-6 sm:py-16 lg:px-8 lg:py-24">
+      <main className="relative mx-auto max-w-5xl px-3 py-6 sm:px-6 sm:py-16 lg:px-8 lg:py-24">
         <Reveal>
-          <header className="mb-10 border-b border-[#EAEAEA] pb-6 sm:mb-14 sm:pb-8">
-            <div className="mb-4 flex flex-wrap items-center gap-2 sm:gap-3">
-              <span className="rounded-full bg-[#FBF3DB] px-3 py-1 text-[10px] uppercase tracking-[0.14em] text-[#956400]">
+          <header className="mb-5 border-b border-[#EAEAEA] pb-4 sm:mb-14 sm:pb-8">
+            <div className="mb-3 flex flex-wrap items-center gap-2 sm:gap-3">
+              <span className="rounded-full bg-[#FBF3DB] px-2.5 py-1 text-[10px] uppercase tracking-[0.14em] text-[#956400]">
                 quote tweet tool
               </span>
-              <span className="rounded-full bg-white px-3 py-1 text-[10px] uppercase tracking-[0.14em] text-[#787774] border border-[#EAEAEA]">
+              <span className="rounded-full border border-[#EAEAEA] bg-white px-2.5 py-1 text-[10px] uppercase tracking-[0.14em] text-[#787774]">
                 {PERSON_NAME}
               </span>
             </div>
 
             <div className="max-w-4xl">
-              <h1 className="font-serif text-[2.8rem] leading-[0.98] tracking-[-0.04em] text-[#111111] sm:text-6xl lg:text-7xl">
+              <h1 className="font-serif text-[2.15rem] leading-[0.96] tracking-[-0.05em] text-[#111111] sm:text-6xl lg:text-7xl">
                 Tweet Bangers
               </h1>
-              <p className="mt-4 max-w-2xl text-sm leading-7 text-[#787774] sm:mt-5 sm:text-base sm:leading-8">
+              <p className="mt-3 max-w-xl text-[13px] leading-6 text-[#787774] sm:mt-5 sm:text-base sm:leading-8">
                 Clean input. Exact tone match. Three quote tweets back.
               </p>
             </div>
           </header>
         </Reveal>
 
-        <div className="grid gap-5 lg:grid-cols-[1.15fr_0.92fr] lg:gap-6">
+        <div className="grid gap-3 lg:grid-cols-[1.15fr_0.92fr] lg:gap-6">
           <Reveal index={1}>
-            <section className="rounded-xl border border-[#EAEAEA] bg-[#F9F9F8] p-4 sm:p-6 lg:p-8">
-              <div className="mb-6 flex flex-col gap-4 border-b border-[#EAEAEA] pb-4 sm:mb-8 sm:flex-row sm:items-center sm:justify-between">
+            <section className="rounded-xl border border-[#EAEAEA] bg-[#F9F9F8] p-3 sm:p-6 lg:p-8">
+              <div className="mb-4 flex flex-col gap-3 border-b border-[#EAEAEA] pb-3 sm:mb-8 sm:flex-row sm:items-center sm:justify-between sm:gap-4 sm:pb-4">
                 <div>
                   <p className="text-xs uppercase tracking-[0.12em] text-[#787774]">
                     Categories
                   </p>
-                  <h2 className="mt-2 font-serif text-2xl tracking-[-0.03em] sm:text-3xl">
+                  <h2 className="mt-1.5 font-serif text-[1.75rem] tracking-[-0.04em] sm:mt-2 sm:text-3xl">
                     Pick a lane
                   </h2>
                 </div>
@@ -309,7 +309,7 @@ export default function App() {
                 ) : null}
               </div>
 
-              <div className="grid gap-3 sm:grid-cols-3">
+              <div className="-mx-3 flex snap-x snap-mandatory gap-2 overflow-x-auto px-3 pb-1 sm:mx-0 sm:grid sm:grid-cols-3 sm:gap-3 sm:overflow-visible sm:px-0 sm:pb-0">
                 {CATEGORIES.map((category, index) => {
                   const isActive = selectedCategory === category.id;
                   const isFetching = loadingCategory === category.id;
@@ -319,15 +319,15 @@ export default function App() {
                     <Reveal key={category.id} index={index + 2}>
                       <button
                         onClick={() => void handleCategorySelect(category.id)}
-                        className={`h-full min-h-[160px] rounded-xl border p-4 text-left transition sm:min-h-[180px] sm:p-5 ${
+                        className={`min-h-[124px] w-[68vw] max-w-[250px] shrink-0 snap-start rounded-xl border p-3.5 text-left transition sm:min-h-[180px] sm:w-auto sm:max-w-none sm:p-5 ${
                           isActive
                             ? "border-[#111111] bg-[#111111] text-white"
                             : "border-[#EAEAEA] bg-white hover:border-[#CFCFCB] hover:shadow-[0_2px_8px_rgba(0,0,0,0.04)]"
                         }`}
                       >
-                        <div className="mb-4 flex items-start justify-between gap-3">
+                        <div className="mb-3 flex items-start justify-between gap-3 sm:mb-4">
                           <div>
-                            <h3 className="text-[15px] font-semibold leading-6 sm:text-base">
+                            <h3 className="text-[14px] font-semibold leading-5 sm:text-base sm:leading-6">
                               {category.label}
                             </h3>
                           </div>
@@ -340,7 +340,7 @@ export default function App() {
                           </span>
                         </div>
                         <p
-                          className={`max-w-[18ch] text-sm leading-7 ${
+                          className={`max-w-[18ch] text-[13px] leading-6 sm:text-sm sm:leading-7 ${
                             isActive ? "text-white/72" : "text-[#787774]"
                           }`}
                         >
@@ -352,13 +352,13 @@ export default function App() {
                 })}
               </div>
 
-              <div className="mt-8 border-t border-[#EAEAEA] pt-6 sm:mt-10 sm:pt-8">
+              <div className="mt-6 border-t border-[#EAEAEA] pt-5 sm:mt-10 sm:pt-8">
                 {activeCategory ? (
-                  <div className="mb-5 rounded-xl border border-[#EAEAEA] bg-white px-4 py-4">
+                  <div className="mb-4 rounded-xl border border-[#EAEAEA] bg-white px-3.5 py-3.5 sm:mb-5 sm:px-4 sm:py-4">
                     <p className="text-[10px] uppercase tracking-[0.12em] text-[#787774]">
                       Active category
                     </p>
-                    <p className="mt-2 max-w-2xl text-sm leading-7 text-[#787774]">
+                    <p className="mt-2 max-w-2xl text-[13px] leading-6 text-[#787774] sm:text-sm sm:leading-7">
                       {activeCategory.description}
                     </p>
                   </div>
@@ -374,21 +374,21 @@ export default function App() {
                       void generate();
                     }
                   }}
-                  rows={8}
+                  rows={6}
                   placeholder="Paste the tweet text here..."
-                  className="w-full resize-none rounded-xl border border-[#EAEAEA] bg-white px-4 py-4 text-[15px] leading-7 text-[#111111] outline-none transition placeholder:text-[#A3A3A0] focus:border-[#111111] sm:px-5 sm:leading-8"
+                  className="w-full resize-none rounded-xl border border-[#EAEAEA] bg-white px-4 py-3.5 text-[15px] leading-7 text-[#111111] outline-none transition placeholder:text-[#A3A3A0] focus:border-[#111111] sm:px-5 sm:py-4 sm:leading-8"
                 />
 
-                <div className="mt-6 flex flex-col items-start gap-3 sm:flex-row sm:items-center sm:gap-4">
+                <div className="mt-4 flex flex-col items-start gap-2.5 sm:mt-6 sm:flex-row sm:items-center sm:gap-4">
                   <button
                     onClick={() => void generate()}
                     disabled={loading}
-                    className="w-full rounded-md bg-[#111111] px-6 py-3 text-sm text-white transition hover:bg-[#333333] active:scale-[0.98] disabled:opacity-50 sm:w-auto"
+                    className="w-full rounded-md bg-[#111111] px-5 py-3 text-sm text-white transition hover:bg-[#333333] active:scale-[0.98] disabled:opacity-50 sm:w-auto"
                   >
                     {loading ? "Generating" : "Banger it"}
                   </button>
 
-                  <kbd className="rounded border border-[#EAEAEA] bg-[#F7F6F3] px-2.5 py-1.5 font-mono text-xs text-[#787774]">
+                  <kbd className="rounded border border-[#EAEAEA] bg-[#F7F6F3] px-2.5 py-1.5 font-mono text-[11px] text-[#787774]">
                     ctrl + enter
                   </kbd>
                 </div>
@@ -406,30 +406,32 @@ export default function App() {
           </Reveal>
 
           <Reveal index={2}>
-            <section className="rounded-xl border border-[#EAEAEA] bg-white p-4 sm:p-6 lg:p-8">
-              <div className="mb-8 border-b border-[#EAEAEA] pb-4">
+            <section className="rounded-xl border border-[#EAEAEA] bg-white p-3 sm:p-6 lg:p-8 lg:mt-0">
+              <div className="mb-5 border-b border-[#EAEAEA] pb-3 sm:mb-8 sm:pb-4">
                 <p className="text-xs uppercase tracking-[0.12em] text-[#787774]">
                   Output
                 </p>
-                <h2 className="mt-2 font-serif text-2xl tracking-[-0.03em] sm:text-3xl">
+                <h2 className="mt-1.5 font-serif text-[1.75rem] tracking-[-0.04em] sm:mt-2 sm:text-3xl">
                   Three drafts
                 </h2>
               </div>
 
               {results.length === 0 ? (
-                <div className="rounded-xl border border-dashed border-[#EAEAEA] bg-[#FBFBFA] p-5 text-sm leading-7 text-[#787774] sm:p-6 sm:leading-8">
+                <div className="rounded-xl border border-dashed border-[#EAEAEA] bg-[#FBFBFA] p-4 text-[13px] leading-6 text-[#787774] sm:p-6 sm:text-sm sm:leading-8">
                   Choose a category and run the generator.
                 </div>
               ) : (
-                <div className="space-y-4">
+                <div className="space-y-3 sm:space-y-4">
                   {results.map((text, index) => (
                     <Reveal key={`${index}-${text}`} index={index + 3}>
-                      <article className="rounded-xl border border-[#EAEAEA] bg-[#FBFBFA] p-5">
+                      <article className={`rounded-xl border border-[#EAEAEA] bg-[#FBFBFA] p-4 sm:p-5 ${
+                        index % 2 === 1 ? "sm:translate-x-0 lg:translate-x-0" : ""
+                      }`}>
                         <div className="mb-4 flex items-start gap-3 sm:gap-4">
                           <span className="font-mono text-xs text-[#787774]">
                             0{index + 1}
                           </span>
-                          <p className="flex-1 text-[15px] leading-7 text-[#2F3437] sm:leading-8">
+                          <p className="flex-1 text-[14px] leading-6 text-[#2F3437] sm:text-[15px] sm:leading-8">
                             {text}
                           </p>
                         </div>
